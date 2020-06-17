@@ -9,28 +9,27 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
+io.on('connection', function(socket) {
+  socket.on('ping', function(msg) {
+    console.log('ping' + msg);
+    socket.emit('ping', 'pong');
+  });
+});
+
+app.use(cors())
+app.use(express.json())
+app.use(express.urlencoded({extended:true}))
+
 app.get('/', (req, res) => res.send('OK!'))
 
-app.post('/send_msg', cors(corsOptions), function(req, res) {
-  const { body } = req;
-  const { username } = body;
-  const { repo } = body;
-
+app.post('/send-msg', cors(corsOptions), function(req, res) {
+  const { username, repo } = req.body;
+  console.log('SENDING MSG TO', username);
   io.emit(username, `New commits were pushed to your repository ${repo}`);
 
   return res.send('OK');
 })
 
-io.on('connection', function(socket) {
-  socket.on('ping', function(msg) {
-    console.log('ping' + msg);
-    io.emit('ping', 'pong');
-  });
-});
-
-app.use(express.json())
-//io.origins([corsOptions.origin])
-
-http.listen(process.env.PORT || 3000, function() {
-  console.log('Service running in: http://localhost:3000');
+http.listen(process.env.PORT || 3030, function() {
+  console.log('Service running');
 });
